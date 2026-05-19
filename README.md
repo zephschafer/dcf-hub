@@ -6,7 +6,8 @@ Community collector templates for [dcf](https://github.com/zephschafer/dcf).
 
 ```bash
 dcf import stack_exchange
-dcf import nws
+dcf import nws_observations
+dcf import github_commits
 ```
 
 Each import copies a single YAML template into your project's `collectors/` directory. After importing, fill in any credentials shown in the output and run:
@@ -20,6 +21,8 @@ dcf run <collector_name>
 | Name | Source | Auth |
 |---|---|---|
 | `stack_exchange` | Stack Exchange API | None |
+| `nws_observations` | NOAA National Weather Service | None |
+| `github_commits` | GitHub commits API | `GITHUB_TOKEN` (optional, raises rate limit) |
 
 ## Contributing
 

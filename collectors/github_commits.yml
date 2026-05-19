@@ -1,0 +1,47 @@
+name: github_commits
+namespace: github
+description: Commits to a GitHub repository. Unauthenticated requests are limited to 60/hr — add a token to raise that to 5,000/hr.
+
+source:
+  type: http
+  url: https://api.github.com/repos/zephschafer/dcf/commits
+  method: GET
+  auth:
+    type: bearer
+    value: "{{ env.GITHUB_TOKEN }}"
+  params:
+    - name: per_page
+      type: integer
+      value: 100
+    - name: since
+      type: string
+      format: "%Y-%m-%dT%H:%M:%SZ"
+    - name: until
+      type: string
+      format: "%Y-%m-%dT%H:%M:%SZ"
+  response:
+    format: json
+  rate_limit:
+    requests: 60
+    per_minutes: 60
+  schema:
+    columns:
+      - {name: sha,          path: sha,                   type: string}
+      - {name: author,       path: commit.author.name,    type: string}
+      - {name: email,        path: commit.author.email,   type: string}
+      - {name: message,      path: commit.message,        type: string}
+      - {name: committed_at, path: commit.author.date,    type: timestamp}
+      - {name: url,          path: html_url,              type: string}
+
+cadence:
+  strategy: incremental
+  primary_key: sha
+  iterate:
+    - type: date_range
+      params: [since, until]
+      start: "2024-01-01"
+      end: today
+      step: 30 days
+
+deployment:
+  schedule: "0 8 * * *"

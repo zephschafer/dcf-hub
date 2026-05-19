@@ -1,0 +1,43 @@
+name: nws_observations
+namespace: nws
+description: Hourly weather observations from a NOAA National Weather Service station. No auth required.
+
+source:
+  type: http
+  url: https://api.weather.gov/stations/KPDX/observations
+  method: GET
+  params:
+    - name: start
+      type: string
+      format: "%Y-%m-%dT%H:%M:%SZ"
+    - name: end
+      type: string
+      format: "%Y-%m-%dT%H:%M:%SZ"
+    - name: limit
+      type: integer
+      value: 500
+  response:
+    format: json
+    records_path: features
+  schema:
+    columns:
+      - {name: timestamp,         path: properties.timestamp,                type: timestamp}
+      - {name: temperature_c,     path: properties.temperature.value,        type: float}
+      - {name: wind_speed_kmh,    path: properties.windSpeed.value,          type: float}
+      - {name: wind_direction,    path: properties.windDirection.value,      type: float}
+      - {name: humidity_pct,      path: properties.relativeHumidity.value,   type: float}
+      - {name: description,       path: properties.textDescription,          type: string}
+      - {name: station,           path: properties.station,                  type: string}
+
+cadence:
+  strategy: incremental
+  primary_key: timestamp
+  iterate:
+    - type: date_range
+      params: [start, end]
+      start: "2024-01-01"
+      end: today
+      step: 30 days
+
+deployment:
+  schedule: "0 1 * * *"
