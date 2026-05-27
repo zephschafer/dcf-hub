@@ -1,0 +1,56 @@
+name: salesforce_contacts
+namespace: salesforce
+description: Contacts from Salesforce CRM via the REST API. Requires a pre-generated access token (obtain with `sfdx org display --verbose` or the Connected App OAuth flow).
+
+source:
+  type: http
+  url: "https://{{ env.SALESFORCE_INSTANCE_URL }}/services/data/v58.0/query"
+  method: GET
+  auth:
+    type: bearer
+    value: "{{ env.SALESFORCE_ACCESS_TOKEN }}"
+  params:
+    - name: q
+      type: string
+      value: "SELECT Id, FirstName, LastName, Email, Phone, AccountId, Title, Department, LeadSource, CreatedDate, LastModifiedDate FROM Contact ORDER BY LastModifiedDate ASC LIMIT 2000"
+  response:
+    format: json
+    records_path: records
+  schema:
+    columns:
+      - name: id
+        path: Id
+        type: string
+      - name: first_name
+        path: FirstName
+        type: string
+      - name: last_name
+        path: LastName
+        type: string
+      - name: email
+        path: Email
+        type: string
+      - name: phone
+        path: Phone
+        type: string
+      - name: account_id
+        path: AccountId
+        type: string
+      - name: title
+        path: Title
+        type: string
+      - name: department
+        path: Department
+        type: string
+      - name: lead_source
+        path: LeadSource
+        type: string
+      - name: created_date
+        path: CreatedDate
+        type: string
+      - name: last_modified_date
+        path: LastModifiedDate
+        type: string
+
+cadence:
+  strategy: full_refresh

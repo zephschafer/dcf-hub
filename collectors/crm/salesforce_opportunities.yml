@@ -1,0 +1,62 @@
+name: salesforce_opportunities
+namespace: salesforce
+description: Opportunities (deals) from Salesforce CRM via the REST API. Requires a pre-generated access token (obtain with `sfdx org display --verbose` or the Connected App OAuth flow).
+
+source:
+  type: http
+  url: "https://{{ env.SALESFORCE_INSTANCE_URL }}/services/data/v58.0/query"
+  method: GET
+  auth:
+    type: bearer
+    value: "{{ env.SALESFORCE_ACCESS_TOKEN }}"
+  params:
+    - name: q
+      type: string
+      value: "SELECT Id, Name, AccountId, OwnerId, StageName, Amount, CloseDate, Probability, LeadSource, IsClosed, IsWon, CreatedDate, LastModifiedDate FROM Opportunity ORDER BY LastModifiedDate ASC LIMIT 2000"
+  response:
+    format: json
+    records_path: records
+  schema:
+    columns:
+      - name: id
+        path: Id
+        type: string
+      - name: name
+        path: Name
+        type: string
+      - name: account_id
+        path: AccountId
+        type: string
+      - name: owner_id
+        path: OwnerId
+        type: string
+      - name: stage_name
+        path: StageName
+        type: string
+      - name: amount
+        path: Amount
+        type: float
+      - name: close_date
+        path: CloseDate
+        type: string
+      - name: probability
+        path: Probability
+        type: float
+      - name: lead_source
+        path: LeadSource
+        type: string
+      - name: is_closed
+        path: IsClosed
+        type: boolean
+      - name: is_won
+        path: IsWon
+        type: boolean
+      - name: created_date
+        path: CreatedDate
+        type: string
+      - name: last_modified_date
+        path: LastModifiedDate
+        type: string
+
+cadence:
+  strategy: full_refresh

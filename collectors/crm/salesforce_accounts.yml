@@ -1,0 +1,56 @@
+name: salesforce_accounts
+namespace: salesforce
+description: Accounts from Salesforce CRM via the REST API. Requires a pre-generated access token (obtain with `sfdx org display --verbose` or the Connected App OAuth flow).
+
+source:
+  type: http
+  url: "https://{{ env.SALESFORCE_INSTANCE_URL }}/services/data/v58.0/query"
+  method: GET
+  auth:
+    type: bearer
+    value: "{{ env.SALESFORCE_ACCESS_TOKEN }}"
+  params:
+    - name: q
+      type: string
+      value: "SELECT Id, Name, Type, Industry, AnnualRevenue, OwnerId, BillingCity, BillingCountry, BillingState, CreatedDate, LastModifiedDate FROM Account ORDER BY LastModifiedDate ASC LIMIT 2000"
+  response:
+    format: json
+    records_path: records
+  schema:
+    columns:
+      - name: id
+        path: Id
+        type: string
+      - name: name
+        path: Name
+        type: string
+      - name: type
+        path: Type
+        type: string
+      - name: industry
+        path: Industry
+        type: string
+      - name: annual_revenue
+        path: AnnualRevenue
+        type: float
+      - name: owner_id
+        path: OwnerId
+        type: string
+      - name: billing_city
+        path: BillingCity
+        type: string
+      - name: billing_state
+        path: BillingState
+        type: string
+      - name: billing_country
+        path: BillingCountry
+        type: string
+      - name: created_date
+        path: CreatedDate
+        type: string
+      - name: last_modified_date
+        path: LastModifiedDate
+        type: string
+
+cadence:
+  strategy: full_refresh
