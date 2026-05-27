@@ -1,0 +1,42 @@
+name: ga4_events
+namespace: google_analytics
+description: Event counts by type from Google Analytics 4 via the GA4 Data API. Requires pip install dcf-google-analytics and a GOOGLE_APPLICATION_CREDENTIALS service account key file.
+
+source:
+  type: python
+  module: dcf_google_analytics
+  function: fetch_events
+  params:
+    - name: property_id
+      type: string
+      value: "{{ env.GA4_PROPERTY_ID }}"
+    - name: start_date
+      type: string
+      value: ~
+    - name: end_date
+      type: string
+      value: ~
+  schema:
+    columns:
+      - name: date
+        path: date
+        type: string
+      - name: event_name
+        path: eventName
+        type: string
+      - name: event_count
+        path: eventCount
+        type: integer
+      - name: event_value
+        path: eventValue
+        type: float
+
+cadence:
+  strategy: incremental
+  primary_key: date
+  iterate:
+    - type: date_range
+      params: [start_date, end_date]
+      start: "2024-01-01"
+      end: today
+      step: 30 days
