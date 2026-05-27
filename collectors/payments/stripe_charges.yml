@@ -1,0 +1,70 @@
+name: stripe_charges
+namespace: stripe
+description: Charges (payment attempts) from Stripe, fetched via the Stripe REST API using date-range iteration.
+
+source:
+  type: http
+  url: https://api.stripe.com/v1/charges
+  method: GET
+  auth:
+    type: bearer
+    value: "{{ env.STRIPE_SECRET_KEY }}"
+  params:
+    - name: "created[gte]"
+      type: string
+      value: ~
+    - name: "created[lt]"
+      type: string
+      value: ~
+    - name: limit
+      type: integer
+      value: 100
+  response:
+    format: json
+    records_path: data
+  schema:
+    columns:
+      - name: id
+        path: id
+        type: string
+      - name: amount
+        path: amount
+        type: integer
+      - name: currency
+        path: currency
+        type: string
+      - name: customer
+        path: customer
+        type: string
+      - name: status
+        path: status
+        type: string
+      - name: created
+        path: created
+        type: integer
+      - name: description
+        path: description
+        type: string
+      - name: invoice
+        path: invoice
+        type: string
+      - name: payment_intent
+        path: payment_intent
+        type: string
+      - name: captured
+        path: captured
+        type: boolean
+      - name: refunded
+        path: refunded
+        type: boolean
+
+cadence:
+  strategy: incremental
+  primary_key: id
+  iterate:
+    - type: date_range
+      params: ["created[gte]", "created[lt]"]
+      format: "%s"
+      start: "2024-01-01"
+      end: today
+      step: 30 days

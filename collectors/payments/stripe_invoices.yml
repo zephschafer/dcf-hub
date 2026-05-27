@@ -1,0 +1,70 @@
+name: stripe_invoices
+namespace: stripe
+description: Invoices from Stripe, fetched via the Stripe REST API using date-range iteration.
+
+source:
+  type: http
+  url: https://api.stripe.com/v1/invoices
+  method: GET
+  auth:
+    type: bearer
+    value: "{{ env.STRIPE_SECRET_KEY }}"
+  params:
+    - name: "created[gte]"
+      type: string
+      value: ~
+    - name: "created[lt]"
+      type: string
+      value: ~
+    - name: limit
+      type: integer
+      value: 100
+  response:
+    format: json
+    records_path: data
+  schema:
+    columns:
+      - name: id
+        path: id
+        type: string
+      - name: customer
+        path: customer
+        type: string
+      - name: subscription
+        path: subscription
+        type: string
+      - name: status
+        path: status
+        type: string
+      - name: amount_due
+        path: amount_due
+        type: integer
+      - name: amount_paid
+        path: amount_paid
+        type: integer
+      - name: currency
+        path: currency
+        type: string
+      - name: created
+        path: created
+        type: integer
+      - name: period_start
+        path: period_start
+        type: integer
+      - name: period_end
+        path: period_end
+        type: integer
+      - name: paid
+        path: paid
+        type: boolean
+
+cadence:
+  strategy: incremental
+  primary_key: id
+  iterate:
+    - type: date_range
+      params: ["created[gte]", "created[lt]"]
+      format: "%s"
+      start: "2024-01-01"
+      end: today
+      step: 30 days

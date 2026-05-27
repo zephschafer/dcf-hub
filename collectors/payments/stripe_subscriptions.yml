@@ -1,0 +1,70 @@
+name: stripe_subscriptions
+namespace: stripe
+description: Subscriptions from Stripe, fetched via the Stripe REST API using date-range iteration on creation date.
+
+source:
+  type: http
+  url: https://api.stripe.com/v1/subscriptions
+  method: GET
+  auth:
+    type: bearer
+    value: "{{ env.STRIPE_SECRET_KEY }}"
+  params:
+    - name: "created[gte]"
+      type: string
+      value: ~
+    - name: "created[lt]"
+      type: string
+      value: ~
+    - name: limit
+      type: integer
+      value: 100
+    - name: status
+      type: string
+      value: all
+  response:
+    format: json
+    records_path: data
+  schema:
+    columns:
+      - name: id
+        path: id
+        type: string
+      - name: customer
+        path: customer
+        type: string
+      - name: status
+        path: status
+        type: string
+      - name: current_period_start
+        path: current_period_start
+        type: integer
+      - name: current_period_end
+        path: current_period_end
+        type: integer
+      - name: created
+        path: created
+        type: integer
+      - name: canceled_at
+        path: canceled_at
+        type: integer
+      - name: plan_id
+        path: plan.id
+        type: string
+      - name: plan_amount
+        path: plan.amount
+        type: integer
+      - name: plan_interval
+        path: plan.interval
+        type: string
+
+cadence:
+  strategy: incremental
+  primary_key: id
+  iterate:
+    - type: date_range
+      params: ["created[gte]", "created[lt]"]
+      format: "%s"
+      start: "2024-01-01"
+      end: today
+      step: 30 days
