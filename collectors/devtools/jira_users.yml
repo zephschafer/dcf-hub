@@ -1,0 +1,39 @@
+name: jira_users
+namespace: jira
+description: Users (team members) from Jira Cloud via the REST API v3.
+
+source:
+  type: http
+  url: "https://{{ env.JIRA_DOMAIN }}/rest/api/3/users/search"
+  method: GET
+  auth:
+    type: header
+    key: Authorization
+    value: "Basic {{ env.JIRA_BASIC_AUTH }}"
+  params:
+    - name: maxResults
+      type: integer
+      value: 1000
+  response:
+    format: json
+    records_path: ~
+  schema:
+    columns:
+      - name: account_id
+        path: accountId
+        type: string
+      - name: display_name
+        path: displayName
+        type: string
+      - name: email_address
+        path: emailAddress
+        type: string
+      - name: active
+        path: active
+        type: boolean
+      - name: account_type
+        path: accountType
+        type: string
+
+cadence:
+  strategy: full_refresh

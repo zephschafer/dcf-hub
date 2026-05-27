@@ -1,0 +1,64 @@
+name: jira_issues
+namespace: jira
+description: Issues from Jira Cloud via the REST API v3, fetched with JQL ordering. Upserts by issue ID on each run.
+
+source:
+  type: http
+  url: "https://{{ env.JIRA_DOMAIN }}/rest/api/3/search"
+  method: GET
+  auth:
+    type: header
+    key: Authorization
+    value: "Basic {{ env.JIRA_BASIC_AUTH }}"
+  params:
+    - name: jql
+      type: string
+      value: "ORDER BY updated ASC"
+    - name: maxResults
+      type: integer
+      value: 1000
+    - name: fields
+      type: string
+      value: "id,key,summary,status,priority,assignee,reporter,issuetype,project,created,updated"
+  response:
+    format: json
+    records_path: issues
+  schema:
+    columns:
+      - name: id
+        path: id
+        type: string
+      - name: key
+        path: key
+        type: string
+      - name: summary
+        path: fields.summary
+        type: string
+      - name: status
+        path: fields.status.name
+        type: string
+      - name: priority
+        path: fields.priority.name
+        type: string
+      - name: assignee_id
+        path: fields.assignee.accountId
+        type: string
+      - name: reporter_id
+        path: fields.reporter.accountId
+        type: string
+      - name: project_key
+        path: fields.project.key
+        type: string
+      - name: issue_type
+        path: fields.issuetype.name
+        type: string
+      - name: created
+        path: fields.created
+        type: string
+      - name: updated
+        path: fields.updated
+        type: string
+
+cadence:
+  strategy: incremental
+  primary_key: id
