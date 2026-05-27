@@ -1,18 +1,18 @@
 name: nws_observations
 namespace: nws
-description: Hourly weather observations from a NOAA National Weather Service station. No auth required.
+description: Hourly weather observations from a NOAA National Weather Service station. No auth required. Set NWS_STATION_ID to your station (default KPDX — Portland, OR). Find station IDs at api.weather.gov/points/{lat},{lon}.
 
 source:
   type: http
-  url: https://api.weather.gov/stations/KPDX/observations
+  url: "https://api.weather.gov/stations/{{ env.NWS_STATION_ID }}/observations"
   method: GET
   params:
     - name: start
       type: string
-      format: "%Y-%m-%dT%H:%M:%SZ"
+      value: ~
     - name: end
       type: string
-      format: "%Y-%m-%dT%H:%M:%SZ"
+      value: ~
     - name: limit
       type: integer
       value: 500
@@ -35,6 +35,7 @@ cadence:
   iterate:
     - type: date_range
       params: [start, end]
+      format: "%Y-%m-%dT%H:%M:%SZ"
       start: "2024-01-01"
       end: today
       step: 30 days

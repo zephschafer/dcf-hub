@@ -1,10 +1,10 @@
 name: github_commits
 namespace: github
-description: Commits to a GitHub repository. Unauthenticated requests are limited to 60/hr — add a token to raise that to 5,000/hr.
+description: Commits to a GitHub repository. Set GITHUB_OWNER and GITHUB_REPO to target any repo. Unauthenticated requests are limited to 60/hr — set GITHUB_TOKEN to raise that to 5,000/hr.
 
 source:
   type: http
-  url: https://api.github.com/repos/zephschafer/dcf/commits
+  url: "https://api.github.com/repos/{{ env.GITHUB_OWNER }}/{{ env.GITHUB_REPO }}/commits"
   method: GET
   auth:
     type: bearer
@@ -15,10 +15,10 @@ source:
       value: 100
     - name: since
       type: string
-      format: "%Y-%m-%dT%H:%M:%SZ"
+      value: ~
     - name: until
       type: string
-      format: "%Y-%m-%dT%H:%M:%SZ"
+      value: ~
   response:
     format: json
   rate_limit:
@@ -39,6 +39,7 @@ cadence:
   iterate:
     - type: date_range
       params: [since, until]
+      format: "%Y-%m-%dT%H:%M:%SZ"
       start: "2024-01-01"
       end: today
       step: 30 days
