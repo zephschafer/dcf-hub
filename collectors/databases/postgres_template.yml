@@ -1,0 +1,24 @@
+name: postgres_template
+namespace: postgres
+description: Template for ingesting tables from a PostgreSQL database using dcf's native SQL source. Replace the table names and primary keys with your schema.
+
+source:
+  type: sql
+  connection:
+    type: postgres
+    host: "{{ env.POSTGRES_HOST }}"
+    port: 5432
+    database: "{{ env.POSTGRES_DATABASE }}"
+    user: "{{ env.POSTGRES_USER }}"
+    password: "{{ env.POSTGRES_PASSWORD }}"
+  tables:
+    - table: users
+      primary_key: id
+    - table: orders
+      primary_key: id
+    - table: events
+      primary_key: id
+      columns: [id, user_id, event_type, properties, created_at]
+
+cadence:
+  strategy: incremental
