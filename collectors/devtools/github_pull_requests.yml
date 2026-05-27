@@ -1,0 +1,51 @@
+name: github_pull_requests
+namespace: github
+description: Pull requests from a GitHub repository. Set GITHUB_OWNER and GITHUB_REPO to target any repo. The pulls API has no date filter, so all PRs are fetched each run and upserted by id.
+
+source:
+  type: http
+  url: "https://api.github.com/repos/{{ env.GITHUB_OWNER }}/{{ env.GITHUB_REPO }}/pulls"
+  method: GET
+  auth:
+    type: bearer
+    value: "{{ env.GITHUB_TOKEN }}"
+  params:
+    - name: state
+      type: string
+      value: all
+    - name: sort
+      type: string
+      value: updated
+    - name: direction
+      type: string
+      value: asc
+    - name: per_page
+      type: integer
+      value: 100
+  response:
+    format: json
+  rate_limit:
+    requests: 60
+    per_minutes: 60
+  schema:
+    columns:
+      - {name: id,          path: id,               type: integer}
+      - {name: number,      path: number,           type: integer}
+      - {name: title,       path: title,            type: string}
+      - {name: state,       path: state,            type: string}
+      - {name: author,      path: user.login,       type: string}
+      - {name: base_ref,    path: base.ref,         type: string}
+      - {name: head_ref,    path: head.ref,         type: string}
+      - {name: draft,       path: draft,            type: boolean}
+      - {name: created_at,  path: created_at,       type: timestamp}
+      - {name: updated_at,  path: updated_at,       type: timestamp}
+      - {name: merged_at,   path: merged_at,        type: timestamp}
+      - {name: closed_at,   path: closed_at,        type: timestamp}
+      - {name: url,         path: html_url,         type: string}
+
+cadence:
+  strategy: incremental
+  primary_key: id
+
+deployment:
+  schedule: "0 8 * * *"

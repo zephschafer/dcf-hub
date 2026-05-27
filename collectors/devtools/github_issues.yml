@@ -1,0 +1,58 @@
+name: github_issues
+namespace: github
+description: Issues from a GitHub repository, incrementally fetched by update time. Set GITHUB_OWNER and GITHUB_REPO to target any repo.
+
+source:
+  type: http
+  url: "https://api.github.com/repos/{{ env.GITHUB_OWNER }}/{{ env.GITHUB_REPO }}/issues"
+  method: GET
+  auth:
+    type: bearer
+    value: "{{ env.GITHUB_TOKEN }}"
+  params:
+    - name: since
+      type: string
+      value: ~
+    - name: state
+      type: string
+      value: all
+    - name: sort
+      type: string
+      value: updated
+    - name: direction
+      type: string
+      value: asc
+    - name: per_page
+      type: integer
+      value: 100
+  response:
+    format: json
+  rate_limit:
+    requests: 60
+    per_minutes: 60
+  schema:
+    columns:
+      - {name: id,           path: id,               type: integer}
+      - {name: number,       path: number,           type: integer}
+      - {name: title,        path: title,            type: string}
+      - {name: state,        path: state,            type: string}
+      - {name: author,       path: user.login,       type: string}
+      - {name: assignee,     path: assignee.login,   type: string}
+      - {name: created_at,   path: created_at,       type: timestamp}
+      - {name: updated_at,   path: updated_at,       type: timestamp}
+      - {name: closed_at,    path: closed_at,        type: timestamp}
+      - {name: url,          path: html_url,         type: string}
+
+cadence:
+  strategy: incremental
+  primary_key: id
+  iterate:
+    - type: date_range
+      params: [since]
+      format: "%Y-%m-%dT%H:%M:%SZ"
+      start: "2024-01-01"
+      end: today
+      step: 30 days
+
+deployment:
+  schedule: "0 8 * * *"
